@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Current Stock Levels</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Stock Dashboard</h1>
+  <table id="stockTable">
+    <thead>
+      <tr><th>Item</th><th>Quantity</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const SHEET_ID = '1B9xaV1IScBO03g7z7gANs7D99YwyOR-xoxShaCrDEqI';
+    const SHEET_NAME = 'Stock Levels';
+    const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+    fetch(API_URL)
+      .then(response => response.text())
+      .then(data => {
+        const json = JSON.parse(data.substring(47).slice(0, -2)); // Remove Google JS wrapper
+        const rows = json.table.rows;
+        const tbody = document.querySelector("#stockTable tbody");
+        tbody.innerHTML = ""; // Clear any existing rows
+        rows.forEach(row => {
+          const item = row.c[0]?.v || "—";
+          const qty = row.c[1]?.v ?? "0";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${item}</td><td>${qty}</td>`;
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(err => {
+        console.error("Failed to fetch stock data:", err);
+        document.querySelector("#stockTable tbody").innerHTML = `<tr><td colspan="2">Error loading data</td></tr>`;
+      });
+  </script>
+</body>
+</html>
