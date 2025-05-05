@@ -9,6 +9,7 @@
       max-width: 800px;
       margin: 20px auto;
       padding: 0 15px;
+      background-color: #f8f9fa;
     }
     h1 {
       text-align: center;
@@ -18,14 +19,20 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      background-color: white;
     }
     th, td {
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       padding: 10px;
       text-align: left;
     }
     th {
-      background-color: #f4f4f4;
+      background-color: #e9ecef;
+    }
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -37,19 +44,26 @@
     </thead>
     <tbody></tbody>
   </table>
+  <p class="error" id="errorMsg"></p>
 
   <script>
-    const SHEET_ID = '1B9xaV1IScBO03g7z7gANs7D99YwyOR-xoxShaCrDEqI';
-    const SHEET_NAME = 'Stock Levels';
+    const SHEET_ID = '1B9xaV1IScBO03g7z7gANs7D99YwyOR-xoxShaCrDEqI';  // Replace if needed
+    const SHEET_NAME = 'Stock Levels';  // Ensure this matches your sheet tab name
     const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
     fetch(API_URL)
       .then(response => response.text())
       .then(data => {
-        const json = JSON.parse(data.substring(47).slice(0, -2)); // Remove Google JS wrapper
+        const json = JSON.parse(data.substring(47).slice(0, -2)); // Remove JS wrapper
         const rows = json.table.rows;
         const tbody = document.querySelector("#stockTable tbody");
-        tbody.innerHTML = ""; // Clear any existing rows
+        tbody.innerHTML = "";
+
+        if (rows.length === 0) {
+          document.getElementById("errorMsg").textContent = "No data available.";
+          return;
+        }
+
         rows.forEach(row => {
           const item = row.c[0]?.v || "—";
           const qty = row.c[1]?.v ?? "0";
@@ -59,8 +73,8 @@
         });
       })
       .catch(err => {
-        console.error("Failed to fetch stock data:", err);
-        document.querySelector("#stockTable tbody").innerHTML = `<tr><td colspan="2">Error loading data</td></tr>`;
+        console.error("Fetch error:", err);
+        document.getElementById("errorMsg").textContent = "Error loading data. Make sure your Google Sheet is published and public.";
       });
   </script>
 </body>
